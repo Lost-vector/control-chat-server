@@ -1,9 +1,10 @@
 import type { Server } from "socket.io";
 import * as room from "./room.js";
+import * as board from "./board/board.js"
 import { cleanMessageText } from "./validation.js";
-import type { ClientToServerEvents, ServerToClientEvents } from "./types.js";
+import type { TypedServer } from "./types.js";
 
-export type TypedServer = Server<ClientToServerEvents, ServerToClientEvents>;
+// export type TypedServer = Server<ClientToServerEvents, ServerToClientEvents>;
 
 export function registerHandlers(io: TypedServer): void {
   io.on("connection", (socket) => {
@@ -23,6 +24,7 @@ export function registerHandlers(io: TypedServer): void {
     });
 
     socket.broadcast.emit("user:joined", { user });
+    board.syncPresence(io);
 
     socket.on("message", (payload) => {
       const text = cleanMessageText(payload?.text);
@@ -30,11 +32,13 @@ export function registerHandlers(io: TypedServer): void {
 
       const message = room.addMessage(user, text);
       io.emit("message", message);
+      void board.handleUserMessage(io, text);
     });
 
     socket.on("disconnect", (reason) => {
       room.removeUser(socket.id);
       io.emit("user:left", { userId: socket.id });
+      board.syncPresence(io);
       console.log(`- ${user.name} left (${reason}, ${room.userCount()} in room)`);
     });
   });

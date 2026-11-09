@@ -1,3 +1,5 @@
+import type { Server } from "socket.io";
+
 export interface User {
   id: string;
   name: string;
@@ -22,3 +24,5 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
   message: (payload: { text: string }) => void;
 }
+
+export type TypedServer = Server<ClientToServerEvents, ServerToClientEvents>;
