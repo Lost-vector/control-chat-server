@@ -18,7 +18,8 @@ export interface ServerToClientEvents {
   "user:joined": (payload: { user: User }) => void;
   "user:left": (payload: { userId: string }) => void;
   message: (message: ChatMessage) => void;
-  "room:error": (payload: { code: "room_full" }) => void;
+  "room:notice": (payload: { code: "rate_limited" | "invalid_message" }) => void;
+  "room:error": (payload: { code: "room_full" | "too_many_connections" | "banned" }) => void;
 }
 
 export interface ClientToServerEvents {

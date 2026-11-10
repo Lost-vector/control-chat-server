@@ -1,6 +1,7 @@
 import * as room from "../room.js"
-import type { TypedServer, User } from "../types.js"
 import { askModel, type Turn } from "./ai.js"
+import { tryConsumeAiCall } from "./budget.js";
+import type { TypedServer, User } from "../types.js"
 
 export const BOARD: User = { id: "board", name: "The Board", avatarId: 0 };
 
@@ -38,6 +39,10 @@ function recentTurns(): Turn[] {
 
 export async function handleUserMessage(io: TypedServer, text: string): Promise<void> {
   if (!active || busy) return;
+
+  if (!tryConsumeAiCall()) {
+    io.emit("message", room.addMessage(BOARD, "The channel is closed. Return later, Operative."))
+  }
 
   busy = true;
   const myEpoch = epoch;

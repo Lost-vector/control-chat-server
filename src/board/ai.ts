@@ -15,12 +15,11 @@ export async function askModel(history: Turn[]): Promise<string> {
   const response = await client.responses.create({
     model: config.aiModel,
     store: true,
-    max_output_tokens : 150,
+    max_output_tokens : 500,
     instructions: BOARD_SYSTEM_PROMPT,
     input: history
   });
 
-  const block = response.output[0];
-  const output_text = block?.type === "message" ? block.content[0]?.type === "output_text" ? block.content[0].text : "" : "";
+  const output_text = response.output_text ?? "";
   return output_text;
 }
