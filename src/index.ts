@@ -13,7 +13,15 @@ const httpServer = createServer((req, res) => {
 });
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
-  cors: { origin: config.allowedOrigin },
+  cors: { origin: config.allowedOrigins },
+  maxHttpBufferSize: 10_000, // bytes per packet (default: 1 Mb)
+  allowRequest: (req, callback) => {
+    const origin = req.headers.origin;
+    // CORS settings don't cover WebSocket upgrades, so check the header ourselves.
+    // scripts without an Origin are only allowed outside production.
+    const ok = origin ? config.allowedOrigins.includes(origin) : !config.isProduction;
+    callback(null, ok);
+  }
 });
 
 registerHandlers(io);
